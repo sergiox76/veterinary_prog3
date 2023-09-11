@@ -203,9 +203,8 @@ public class VetController {
     }
 
     @GetMapping("/countByCity")
-    public ResponseEntity<Map<String, Integer>> countVetsByCity() {
-        Map<String, Integer> vetCountByCity = veterinaryService.countVetsByCity();
-        return ResponseEntity.ok(vetCountByCity);
+    public ResponseEntity<Object> countVetsByCity() {
+        return ResponseEntity.ok(veterinaryService.countVetsByCity());
     }
 
     @GetMapping("/vets/{syllable}/{sortby}")
@@ -224,7 +223,7 @@ public class VetController {
                 List<String> errors = new ArrayList<>();
                 errors.add("No se encontraron veterinarios con la sílaba especificada");
                 return ResponseEntity
-                        .status(HttpStatus.NOT_FOUND)
+                        .status(HttpStatus.OK)
                         .body(new ResponseDTO(HttpStatus.NOT_FOUND.value(), null, errors));
             }
 

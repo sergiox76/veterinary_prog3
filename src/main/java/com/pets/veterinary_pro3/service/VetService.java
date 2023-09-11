@@ -1,5 +1,6 @@
 package com.pets.veterinary_pro3.service;
 
+import com.pets.veterinary_pro3.controller.dto.CountVetByCityDTO;
 import com.pets.veterinary_pro3.exceptions.VeterinaryException;
 import com.pets.veterinary_pro3.model.City;
 import com.pets.veterinary_pro3.model.Vaccine;
@@ -27,7 +28,7 @@ public class VetService {
         vets.add(new Vet("1015345", "Valeria", (byte) 20,new City("16905001","Medellin")));
         vets.add(new Vet("1016345", "Carlos", (byte) 27,new City("16981001","Arauca")));
         vets.add(new Vet("1017345", "Veronica", (byte) 22,new City("16981001","Arauca")));
-        vets.add(new Vet("1018345","Jhair",(byte)18,new City("16941791","Tarqui")));
+        vets.add(new Vet("1018345","Jhair",(byte)19,new City("16941791","Tarqui")));
     }
 
     public Vet findVetById(String code) throws VeterinaryException {
@@ -91,12 +92,12 @@ public class VetService {
 
         return vetBetAges;
     }
-    public String addVet(Vet vets) throws VeterinaryException{
-        if(this.verifyVetExist(vets)){
+    public String addVet(Vet vet) throws VeterinaryException{
+        if(this.verifyVetExist(vet)){
             throw new VeterinaryException("El código ingresado ya existe");
         }
         else{
-                this.vets.add(vets);
+                this.vets.add(vet);
             }
 
         return "veterinario adicionado correctamente";
@@ -121,27 +122,39 @@ public class VetService {
         throw new VeterinaryException("El código ingresado no existe");
 
     }
-    public Map<String, Integer> countVetsByCity() {
-        Map<String, Integer> vetCountByCity = new HashMap<>();
+    public List<CountVetByCityDTO> countVetsByCity() {
+        //Map<String, Integer> vetCountByCity = new HashMap<>();
+        List<CountVetByCityDTO> vetsCountByCity = new ArrayList<>();
 
         for (Vet vet : vets) {
             City city = vet.getCity();
             if (city != null) {
                 String cityDescription = city.getDescription();
-                vetCountByCity.put(cityDescription, vetCountByCity.getOrDefault(cityDescription
-                        , 0) + 1);
+                //vetCountByCity.put(cityDescription, vetCountByCity.getOrDefault(cityDescription
+                       // , 0) + 1);
+                Optional<CountVetByCityDTO> countVetByCityDTOOptional = vetsCountByCity.stream().filter(
+                   x -> x.getName().equals(cityDescription)
+                ).findAny();
+                if (countVetByCityDTOOptional.isPresent()){
+                    countVetByCityDTOOptional.get().setQuantity(countVetByCityDTOOptional.get().getQuantity()+1);
+                }
+                else {
+                    vetsCountByCity.add(new CountVetByCityDTO(cityDescription,1));
+                }
             }
         }
 
-        return vetCountByCity;
+        return vetsCountByCity;
     }
     public List<Vet> getVetsBySyllableAndSort(String syllable, String sortBy) {
         if (syllable.length() != 2) {
             throw new IllegalArgumentException("La sílaba debe tener exactamente dos letras.");
         }
+        CharSequence miCharSequence = syllable.toLowerCase().subSequence(0, syllable.length());
 
         List<Vet> filteredVets = vets.stream()
-                .filter(vet -> containsSyllable(vet.getName().toLowerCase(), syllable.toLowerCase()))
+                //.filter(vet -> containsSyllable(vet.getName().toLowerCase(), syllable.toLowerCase()))
+                .filter(vet -> vet.getName().toLowerCase().contains(miCharSequence))
                 .collect(Collectors.toList());
         if ("age".equalsIgnoreCase(sortBy)) {
             filteredVets.sort(Comparator.comparingInt(Vet::getAge));
